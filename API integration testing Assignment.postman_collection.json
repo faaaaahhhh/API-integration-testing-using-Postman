@@ -1,10 +1,10 @@
 {
   "info": {
-    "_postman_id": "b583228e-848e-4b9b-8aa2-20539a254010",
+    "_postman_id": "acfbaa05-e0fc-4793-8cca-831b7050f16c",
     "name": "API integration testing Assignment",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "54454509",
-    "_collection_link": "https://go.postman.co/collection/54454509-b583228e-848e-4b9b-8aa2-20539a254010?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/54454509-acfbaa05-e0fc-4793-8cca-831b7050f16c?source=collection_link"
   },
   "item": [
     {
@@ -166,6 +166,77 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "admin_login wrong password",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var url = \"http://localhost:5000\";\r",
+                  "pm.collectionVariables.set(\"base_url\",url);\r",
+                  "\r",
+                  "var key =\"ROADTOSDET\";\r",
+                  "pm.collectionVariables.set(\"secret_key\",key);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json_data = pm.response.json();",
+                  "var jsonData = json_data;",
+                  "var token = json_data.token;",
+                  "pm.collectionVariables.set(\"admin_token\",token);",
+                  "pm.test(\"Can not login with wrong password\",",
+                  "function()",
+                  "{",
+                  "    pm.expect(json_data.message).to.contains(\"Password incorrect\");",
+                  "}",
+                  ")",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"admin@dmoney.com\",\r\n  \"password\": \"1278\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/user/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "login"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -200,12 +271,6 @@
                   "}",
                   ")",
                   "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(201);",
-                  "}",
-                  ")",
                   "",
                   "var id = json_data.user.id;",
                   "var email = json_data.user.email;",
@@ -228,9 +293,8 @@
                   "    pm.expect(ct.toLowerCase()).to.include('application/json');",
                   "})",
                   "",
-                  "pm.test('[Positive] Status code is 200 or 201', function () {",
+                  "pm.test('[Positive] Status code is 201', function () {",
                   "    pm.expect([",
-                  "        200,",
                   "        201",
                   "    ]).to.include(pm.response.code);",
                   "})",
@@ -373,6 +437,77 @@
           "response": []
         },
         {
+          "name": "customer1_creation Without Token",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var random_num = _.random(10000000,99999999);\r",
+                  "pm.collectionVariables.set(\"random_id\", random_num);\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json_data = pm.response.json();\r",
+                  "pm.test(\"Can not create without Token\",\r",
+                  "function()\r",
+                  "{\r",
+                  "    pm.expect(json_data.message).to.contains(\"No Token Found!\");\r",
+                  "}\r",
+                  ")"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "X-AUTH-SECRET-KEY",
+                "value": "{{secret_key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"{{$randomFullName}}\",\r\n  \"email\": \"rakibfr28+{{random_id}}@gmail.com\",\r\n  \"password\": \"12345\",\r\n  \"phone_number\": \"018{{random_id}}\",\r\n  \"nid\": \"9{{random_id}}1\",\r\n  \"role\": \"Customer\"\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/create",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "customer2_self_creation",
           "event": [
             {
@@ -400,13 +535,6 @@
                   "}",
                   ")",
                   "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(201);",
-                  "}",
-                  ")",
-                  "",
                   "var id = json_data.user.id;",
                   "var email = json_data.user.email;",
                   "var phn = json_data.user.phone_number;",
@@ -428,9 +556,8 @@
                   "    pm.expect(ct.toLowerCase()).to.include('application/json');",
                   "})",
                   "",
-                  "pm.test('[Positive] Status code is 200 or 201', function () {",
+                  "pm.test('[Positive] Status code is 201', function () {",
                   "    pm.expect([",
-                  "        200,",
                   "        201",
                   "    ]).to.include(pm.response.code);",
                   "})",
@@ -570,6 +697,158 @@
           "response": []
         },
         {
+          "name": "customer2_self_creation with wrong email format",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var random_num = _.random(10000000,99999999);\r",
+                  "pm.collectionVariables.set(\"random_id\", random_num);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json_data = pm.response.json();\r",
+                  "pm.test(\"Can not create without Valid Email\",\r",
+                  "function()\r",
+                  "{\r",
+                  "    pm.expect(json_data.message).to.contains(\"\\\"email\\\" must be a valid email\");\r",
+                  "}\r",
+                  ")"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "X-AUTH-SECRET-KEY",
+                "value": "{{secret_key}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"{{$randomFullName}}\",\r\n  \"email\": \"rakibfr28+{{random_id}}@gmailcom\",\r\n  \"password\": \"12345\",\r\n  \"phone_number\": \"018{{random_id}}\",\r\n  \"nid\": \"9{{random_id}}1\",\r\n  \"role\": \"Customer\"\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "customer3_self_creation",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var random_num = _.random(10000000,99999999);\r",
+                  "pm.collectionVariables.set(\"random_id\", random_num);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json_data = pm.response.json();",
+                  "var jsonData = json_data;",
+                  "pm.test(\"Customer-3 Creation has been Successful\",",
+                  "function()",
+                  "{",
+                  "    pm.expect(json_data.message).to.contains(\"Registration successful\");",
+                  "}",
+                  ")",
+                  "",
+                  "var id = json_data.user.id;",
+                  "var email = json_data.user.email;",
+                  "var phn = json_data.user.phone_number;",
+                  "",
+                  "pm.collectionVariables.set(\"customer3_id\", id);",
+                  "pm.collectionVariables.set(\"customer3_email\", email);",
+                  "pm.collectionVariables.set(\"customer3_phn\", phn);",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "X-AUTH-SECRET-KEY",
+                "value": "{{secret_key}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"{{$randomFullName}}\",\r\n  \"email\": \"rakibfr28+{{random_id}}@gmail.com\",\r\n  \"password\": \"12345\",\r\n  \"phone_number\": \"018{{random_id}}\",\r\n  \"nid\": \"9{{random_id}}1\",\r\n  \"role\": \"Customer\"\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "agent_creation",
           "event": [
             {
@@ -597,13 +876,6 @@
                   "}",
                   ")",
                   "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(201);",
-                  "}",
-                  ")",
-                  "",
                   "var id = json_data.user.id;",
                   "var email = json_data.user.email;",
                   "var phn = json_data.user.phone_number;",
@@ -627,7 +899,6 @@
                   "",
                   "pm.test('[Positive] Status code is 200 or 201', function () {",
                   "    pm.expect([",
-                  "        200,",
                   "        201",
                   "    ]).to.include(pm.response.code);",
                   "})",
@@ -790,13 +1061,6 @@
                   "}",
                   ")",
                   "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
-                  "}",
-                  ")",
-                  "",
                   "pm.test('Response time is less than 5000ms', function () {",
                   "    pm.expect(pm.response.responseTime).to.be.below(5000);",
                   "})",
@@ -953,13 +1217,6 @@
                   "}",
                   ")",
                   "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
-                  "}",
-                  ")",
-                  "",
                   "pm.test('Response time is less than 5000ms', function () {",
                   "    pm.expect(pm.response.responseTime).to.be.below(5000);",
                   "})",
@@ -1113,13 +1370,6 @@
                   "function()",
                   "{",
                   "    pm.expect(json_data.message).to.contains(\"User updated successfully\");",
-                  "}",
-                  ")",
-                  "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
                   "}",
                   ")",
                   "",
@@ -1283,13 +1533,6 @@
                   "function()",
                   "{",
                   "    pm.expect(json_data.message).to.contains(\"Login successful\");",
-                  "}",
-                  ")",
-                  "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
                   "}",
                   ")",
                   "",
@@ -1629,6 +1872,76 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "system_to_NON-EXISTING_deposit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json_data = pm.response.json();",
+                  "var jsonData = json_data;",
+                  "pm.test(\"Can not deposit to non-existing account\",",
+                  "function()",
+                  "{",
+                  "    pm.expect(json_data.message).to.contains(\"To Account does not exist\");",
+                  "}",
+                  ")",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{system_token}}",
+                "type": "text"
+              },
+              {
+                "key": "X-AUTH-SECRET-KEY",
+                "value": "{{secret_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"from_account\": \"SYSTEM\",\r\n  \"to_account\": \"{{agent_phn}}+5\",\r\n  \"amount\": 5000\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transaction/deposit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transaction",
+                "deposit"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -1648,13 +1961,6 @@
                   "function()",
                   "{",
                   "    pm.expect(json_data.message).to.contains(\"OTP sent to your registered email address\");",
-                  "}",
-                  ")",
-                  "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
                   "}",
                   ")",
                   "",
@@ -1799,13 +2105,6 @@
                   "}",
                   ")",
                   "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
-                  "}",
-                  ")",
-                  "",
                   "pm.test('Response time is less than 5000ms', function () {",
                   "    pm.expect(pm.response.responseTime).to.be.below(5000);",
                   "})",
@@ -1924,6 +2223,64 @@
           "response": []
         },
         {
+          "name": "gmail_list without authorization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let json_data = pm.response.json();",
+                  "var jsonData = json_data;",
+                  "pm.test(\"Unauthorized access should fail\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer afhuhadfb",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
+              "protocol": "https",
+              "host": [
+                "gmail",
+                "googleapis",
+                "com"
+              ],
+              "path": [
+                "gmail",
+                "v1",
+                "users",
+                "me",
+                "messages"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "read_email",
           "event": [
             {
@@ -1939,13 +2296,6 @@
                   "function()",
                   "{",
                   "    pm.expect(json_data.snippet).to.contains(\"Your One-Time Password (OTP) for DMoney login is:\");",
-                  "}",
-                  ")",
-                  "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
                   "}",
                   ")",
                   "",
@@ -2118,13 +2468,6 @@
                   "function()",
                   "{",
                   "    pm.expect(json_data.message).to.contains(\"Login successful\");",
-                  "}",
-                  ")",
-                  "",
-                  "pm.test(\"The Status Code is 200\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
                   "}",
                   ")",
                   "",
@@ -2469,6 +2812,148 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "agent_customer_depo OUTSIDE LIMITATION",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json_data = pm.response.json();",
+                  "var jsonData = json_data;",
+                  "var token = json_data.token;",
+                  "pm.test(\"The Agent Can Deposit less than minimum or more than maximum limit\",",
+                  "function()",
+                  "{",
+                  "    pm.expect(json_data.message).to.contains(\"Minimum deposit amount is 10 tk and maximum deposit amount is 10000 tk\");",
+                  "}",
+                  ")",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agent_token}}",
+                "type": "text"
+              },
+              {
+                "key": "X-AUTH-SECRET-KEY",
+                "value": "{{secret_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"from_account\": \"{{agent_phn}}\",\r\n  \"to_account\": \"{{customer1_phn}}\",\r\n  \"amount\": 2000000000\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transaction/deposit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transaction",
+                "deposit"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "agent_customer_depo to INACTIVE ACCOUNT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json_data = pm.response.json();",
+                  "var jsonData = json_data;",
+                  "var token = json_data.token;",
+                  "pm.test(\"Can not deposit to INACTIVE account\", ",
+                  "function()",
+                  "{",
+                  "    pm.expect(json_data.message).to.contains(\"To account is not active. Please contact admin.\");",
+                  "}",
+                  ")",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{agent_token}}",
+                "type": "text"
+              },
+              {
+                "key": "X-AUTH-SECRET-KEY",
+                "value": "{{secret_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"from_account\": \"{{agent_phn}}\",\r\n  \"to_account\": \"{{customer3_phn}}\",\r\n  \"amount\": 2000\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transaction/deposit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transaction",
+                "deposit"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -2488,13 +2973,6 @@
                   "function()",
                   "{",
                   "    pm.expect(json_data.message).to.contains(\"OTP sent to your registered email address\");",
-                  "}",
-                  ")",
-                  "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
                   "}",
                   ")",
                   "",
@@ -2650,13 +3128,6 @@
                   "}",
                   ")",
                   "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
-                  "}",
-                  ")",
-                  "",
                   "pm.test('Response time is less than 5000ms', function () {",
                   "    pm.expect(pm.response.responseTime).to.be.below(5000);",
                   "})",
@@ -2790,13 +3261,6 @@
                   "function()",
                   "{",
                   "    pm.expect(json_data.snippet).to.contains(\"Your One-Time Password (OTP) for DMoney login is:\");",
-                  "}",
-                  ")",
-                  "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
                   "}",
                   ")",
                   "",
@@ -2969,13 +3433,6 @@
                   "function()",
                   "{",
                   "    pm.expect(json_data.message).to.contains(\"Login successful\");",
-                  "}",
-                  ")",
-                  "",
-                  "pm.test(\"The Status Code is 200\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
                   "}",
                   ")",
                   "",
@@ -3350,13 +3807,6 @@
                   "}",
                   ")",
                   "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
-                  "}",
-                  ")",
-                  "",
                   "pm.test('Response time is less than 5000ms', function () {",
                   "    pm.expect(pm.response.responseTime).to.be.below(5000);",
                   "})",
@@ -3509,13 +3959,6 @@
                   "}",
                   ")",
                   "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
-                  "}",
-                  ")",
-                  "",
                   "pm.test('Response time is less than 5000ms', function () {",
                   "    pm.expect(pm.response.responseTime).to.be.below(5000);",
                   "})",
@@ -3639,7 +4082,6 @@
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
                 "exec": [
                   "let json_data = pm.response.json();",
                   "let jsonData = json_data;",
@@ -3650,13 +4092,6 @@
                   "function()",
                   "{",
                   "    pm.expect(json_data.snippet).to.contains(\"Your One-Time Password (OTP) for DMoney login is:\");",
-                  "}",
-                  ")",
-                  "",
-                  "pm.test(\"The Status Code is as Expected\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
                   "}",
                   ")",
                   "",
@@ -3766,7 +4201,10 @@
                   "pm.test('[Negative] Status code is not 429 Rate Limit', function () {",
                   "    pm.expect(pm.response.code).to.not.equal(429);",
                   "})"
-                ]
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             },
             {
@@ -3825,13 +4263,6 @@
                   "function()",
                   "{",
                   "    pm.expect(json_data.message).to.contains(\"Login successful\");",
-                  "}",
-                  ")",
-                  "",
-                  "pm.test(\"The Status Code is 200\",",
-                  "function()",
-                  "{",
-                  "    pm.response.to.have.status(200);",
                   "}",
                   ")",
                   "",
@@ -4286,6 +4717,18 @@
     },
     {
       "key": "customer2_token",
+      "value": ""
+    },
+    {
+      "key": "customer3_id",
+      "value": ""
+    },
+    {
+      "key": "customer3_email",
+      "value": ""
+    },
+    {
+      "key": "customer3_phn",
       "value": ""
     }
   ]
