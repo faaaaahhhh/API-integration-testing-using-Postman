@@ -2823,7 +2823,7 @@
                   "var json_data = pm.response.json();",
                   "var jsonData = json_data;",
                   "var token = json_data.token;",
-                  "pm.test(\"The Agent Can Deposit less than minimum or more than maximum limit\",",
+                  "pm.test(\"The Agent Can not Deposit less than minimum or more than maximum limit\",",
                   "function()",
                   "{",
                   "    pm.expect(json_data.message).to.contains(\"Minimum deposit amount is 10 tk and maximum deposit amount is 10000 tk\");",
