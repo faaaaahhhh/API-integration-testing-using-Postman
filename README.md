@@ -206,7 +206,7 @@ newman run "API integration testing Assignment.postman_collection.json" -r htmle
 
 # 📷 Newman Report Screenshot
 
-<img width="996" height="938" alt="Screenshot 2026-05-14 204553" src="https://github.com/user-attachments/assets/cedb3bf7-c8c8-4561-84db-16eeff97b26c" />
+<img width="1001" height="929" alt="newman_screenshot" src="https://github.com/user-attachments/assets/291f23bf-7196-4c87-8e83-2c20c47697f3" />
 
 ---
 
