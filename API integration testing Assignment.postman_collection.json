@@ -11,6 +11,75 @@
       "name": "Admin Login",
       "item": [
         {
+          "name": "admin_login wrong password",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var url = \"http://localhost:5000\";\r",
+                  "pm.collectionVariables.set(\"base_url\",url);\r",
+                  "\r",
+                  "var key =\"ROADTOSDET\";\r",
+                  "pm.collectionVariables.set(\"secret_key\",key);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json_data = pm.response.json();",
+                  "var jsonData = json_data;",
+                  "pm.test(\"Can not login with wrong password\",",
+                  "function()",
+                  "{",
+                  "    pm.expect(json_data.message).to.contains(\"Password incorrect\");",
+                  "}",
+                  ")",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"admin@dmoney.com\",\r\n  \"password\": \"1278\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/user/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "admin_login",
           "event": [
             {
@@ -166,19 +235,22 @@
             }
           },
           "response": []
-        },
+        }
+      ]
+    },
+    {
+      "name": "User Creation",
+      "item": [
         {
-          "name": "admin_login wrong password",
+          "name": "customer1_creation Without Token",
           "event": [
             {
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  "var url = \"http://localhost:5000\";\r",
-                  "pm.collectionVariables.set(\"base_url\",url);\r",
-                  "\r",
-                  "var key =\"ROADTOSDET\";\r",
-                  "pm.collectionVariables.set(\"secret_key\",key);"
+                  "var random_num = _.random(10000000,99999999);\r",
+                  "pm.collectionVariables.set(\"random_id\", random_num);\r",
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -189,17 +261,13 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "var json_data = pm.response.json();",
-                  "var jsonData = json_data;",
-                  "var token = json_data.token;",
-                  "pm.collectionVariables.set(\"admin_token\",token);",
-                  "pm.test(\"Can not login with wrong password\",",
-                  "function()",
-                  "{",
-                  "    pm.expect(json_data.message).to.contains(\"Password incorrect\");",
-                  "}",
-                  ")",
-                  ""
+                  "var json_data = pm.response.json();\r",
+                  "pm.test(\"Can not create without Token\",\r",
+                  "function()\r",
+                  "{\r",
+                  "    pm.expect(json_data.message).to.contains(\"No Token Found!\");\r",
+                  "}\r",
+                  ")"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -214,35 +282,36 @@
                 "key": "Content-Type",
                 "value": "application/json",
                 "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "X-AUTH-SECRET-KEY",
+                "value": "{{secret_key}}",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"email\": \"admin@dmoney.com\",\r\n  \"password\": \"1278\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\r\n  \"name\": \"{{$randomFullName}}\",\r\n  \"email\": \"rakibfr28+{{random_id}}@gmail.com\",\r\n  \"password\": \"12345\",\r\n  \"phone_number\": \"018{{random_id}}\",\r\n  \"nid\": \"9{{random_id}}1\",\r\n  \"role\": \"Customer\"\r\n}"
             },
             "url": {
-              "raw": "{{base_url}}/user/login",
+              "raw": "{{base_url}}/user/create",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "user",
-                "login"
+                "create"
               ]
             }
           },
           "response": []
-        }
-      ]
-    },
-    {
-      "name": "User Creation",
-      "item": [
+        },
         {
           "name": "customer1_creation",
           "event": [
@@ -437,15 +506,14 @@
           "response": []
         },
         {
-          "name": "customer1_creation Without Token",
+          "name": "customer2_self_creation with wrong email format",
           "event": [
             {
               "listen": "prerequest",
               "script": {
                 "exec": [
                   "var random_num = _.random(10000000,99999999);\r",
-                  "pm.collectionVariables.set(\"random_id\", random_num);\r",
-                  ""
+                  "pm.collectionVariables.set(\"random_id\", random_num);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -457,10 +525,10 @@
               "script": {
                 "exec": [
                   "var json_data = pm.response.json();\r",
-                  "pm.test(\"Can not create without Token\",\r",
+                  "pm.test(\"Can not create without Valid Email\",\r",
                   "function()\r",
                   "{\r",
-                  "    pm.expect(json_data.message).to.contains(\"No Token Found!\");\r",
+                  "    pm.expect(json_data.message).to.contains(\"\\\"email\\\" must be a valid email\");\r",
                   "}\r",
                   ")"
                 ],
@@ -487,21 +555,22 @@
               {
                 "key": "X-AUTH-SECRET-KEY",
                 "value": "{{secret_key}}",
-                "type": "text"
+                "type": "text",
+                "disabled": true
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"name\": \"{{$randomFullName}}\",\r\n  \"email\": \"rakibfr28+{{random_id}}@gmail.com\",\r\n  \"password\": \"12345\",\r\n  \"phone_number\": \"018{{random_id}}\",\r\n  \"nid\": \"9{{random_id}}1\",\r\n  \"role\": \"Customer\"\r\n}"
+              "raw": "{\r\n  \"name\": \"{{$randomFullName}}\",\r\n  \"email\": \"rakibfr28+{{random_id}}@gmailcom\",\r\n  \"password\": \"12345\",\r\n  \"phone_number\": \"018{{random_id}}\",\r\n  \"nid\": \"9{{random_id}}1\",\r\n  \"role\": \"Customer\"\r\n}"
             },
             "url": {
-              "raw": "{{base_url}}/user/create",
+              "raw": "{{base_url}}/user/register",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "user",
-                "create"
+                "register"
               ]
             }
           },
@@ -682,77 +751,6 @@
             "body": {
               "mode": "raw",
               "raw": "{\r\n  \"name\": \"{{$randomFullName}}\",\r\n  \"email\": \"rakibfr28+{{random_id}}@gmail.com\",\r\n  \"password\": \"12345\",\r\n  \"phone_number\": \"018{{random_id}}\",\r\n  \"nid\": \"9{{random_id}}1\",\r\n  \"role\": \"Customer\"\r\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/user/register",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "user",
-                "register"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "customer2_self_creation with wrong email format",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "var random_num = _.random(10000000,99999999);\r",
-                  "pm.collectionVariables.set(\"random_id\", random_num);"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "var json_data = pm.response.json();\r",
-                  "pm.test(\"Can not create without Valid Email\",\r",
-                  "function()\r",
-                  "{\r",
-                  "    pm.expect(json_data.message).to.contains(\"\\\"email\\\" must be a valid email\");\r",
-                  "}\r",
-                  ")"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{admin_token}}",
-                "type": "text",
-                "disabled": true
-              },
-              {
-                "key": "X-AUTH-SECRET-KEY",
-                "value": "{{secret_key}}",
-                "type": "text",
-                "disabled": true
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"name\": \"{{$randomFullName}}\",\r\n  \"email\": \"rakibfr28+{{random_id}}@gmailcom\",\r\n  \"password\": \"12345\",\r\n  \"phone_number\": \"018{{random_id}}\",\r\n  \"nid\": \"9{{random_id}}1\",\r\n  \"role\": \"Customer\"\r\n}"
             },
             "url": {
               "raw": "{{base_url}}/user/register",
